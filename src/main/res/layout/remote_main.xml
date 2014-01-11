@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="match_parent"
+	android:layout_height="match_parent"
+    android:keepScreenOn="true">
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:text="Up"
+		android:id="@+id/button_up"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal" />
+
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal">
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Left"
+			android:id="@+id/button_left" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="B"
+			android:id="@+id/button_b" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Right"
+			android:id="@+id/button_right" />
+	</LinearLayout>
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:text="Down"
+		android:id="@+id/button_down"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal" />
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:text="A"
+		android:id="@+id/button_a"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal" />
+
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal" >
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Back"
+			android:id="@+id/button_back" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Home"
+			android:id="@+id/button_home" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Pause"
+			android:id="@+id/button_pause" />
+	</LinearLayout>
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:text="1"
+		android:id="@+id/button_1"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal" />
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:text="2"
+		android:id="@+id/button_2"
+		android:layout_weight="1"
+		android:layout_gravity="center_horizontal" />
+</LinearLayout>
