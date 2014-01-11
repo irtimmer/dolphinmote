@@ -160,6 +160,10 @@ public class DolphinConnection {
 		sendPacket();
 	}
 
+	public boolean isConnected() {
+		return connected;
+	}
+
 	public void close() {
 		socket.close();
 	}

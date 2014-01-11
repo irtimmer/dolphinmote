@@ -148,6 +148,13 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 				}
 			}
 		});
+		builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialogInterface) {
+				if (!conn.isConnected())
+					RemoteActivity.this.finish();
+			}
+		});
 		dialog = builder.show();
 
 		conn.receiveDiscover(new DolphinConnection.DiscoverListener() {
