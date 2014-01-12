@@ -20,7 +20,9 @@
 package org.timmer.dolphinmote;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -28,8 +30,10 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 
 import java.io.IOException;
+import java.net.SocketException;
 
 public class RemoteActivity extends Activity implements SensorEventListener, View.OnTouchListener {
 
@@ -37,11 +41,12 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 
 	private SensorManager sensors;
 	private Sensor accelerometer;
+	private AlertDialog dialog;
 
 	private final static int[] BUTTONS = new int[]{ R.id.button_up, R.id.button_down, R.id.button_left, R.id.button_right, R.id.button_a, R.id.button_back, R.id.button_home, R.id.button_pause, R.id.button_1, R.id.button_2};
 
 	public RemoteActivity() throws IOException {
-		conn = new DolphinConnection("192.168.68.10", 4432);
+		conn = new DolphinConnection();
 	}
 
 	@Override
@@ -55,13 +60,15 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 		for (int button:BUTTONS) {
 			findViewById(button).setOnTouchListener(this);
 		}
-
-		onResume();
 	}
 
 	@Override
 	protected void onResume() {
 		sensors.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+		if (dialog == null)
+			showDiscoverDialog();
+
 		super.onResume();
 	}
 
@@ -125,5 +132,34 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int i) {}
+
+	public void showDiscoverDialog() {
+		final ArrayAdapter<DolphinConnection.UdpMote> list = new ArrayAdapter<DolphinConnection.UdpMote>(this, android.R.layout.select_dialog_singlechoice);
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.pick_mote);
+		builder.setAdapter(list, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				DolphinConnection.UdpMote mote = list.getItem(which);
+				try {
+					conn.setServer(mote.getHost(), mote.getPort());
+				} catch (SocketException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		dialog = builder.show();
+
+		conn.receiveDiscover(new DolphinConnection.DiscoverListener() {
+			@Override
+			public void onDiscover(final DolphinConnection.UdpMote mote) {
+				RemoteActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						list.add(mote);
+					}
+				});
+			}
+		});
+	}
 
 }

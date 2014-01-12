@@ -26,14 +26,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashSet;
 
 public class DolphinConnection {
 
-	private final DatagramSocket socket;
-	private InetAddress host;
+	private final static int ANNOUNCE_PORT = 4431;
+
+	private DatagramSocket socket;
 
 	private ByteBuffer buffer;
 	private DatagramPacket packet;
@@ -41,15 +42,24 @@ public class DolphinConnection {
 	private int buttonMask;
 	private int x, y, z;
 
-	public DolphinConnection(String host, int port) throws SocketException, UnknownHostException {
-		socket = new DatagramSocket();
-		this.host = InetAddress.getByName(host);
+	private boolean connected;
+
+	public DolphinConnection() throws SocketException {
+		socket = new DatagramSocket(ANNOUNCE_PORT);
 
 		buffer = ByteBuffer.allocate(64);
 		buffer.order(ByteOrder.BIG_ENDIAN);
 		packet = new DatagramPacket(buffer.array(), buffer.limit());
+	}
+
+	public void setServer(InetAddress host, int port) throws SocketException {
+		socket.close();
+		socket = new DatagramSocket();
+
+		packet.setAddress(host);
 		packet.setPort(port);
-		packet.setAddress(this.host);
+
+		connected = true;
 	}
 
 	public void sendAccelerator(final float x, final float y, final float z) {
@@ -61,10 +71,13 @@ public class DolphinConnection {
 	}
 
 	private void sendPacket() {
+		if (!connected)
+			return;
+
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				synchronized (socket) {
+				synchronized (DolphinConnection.this) {
 					buffer.clear();
 					buffer.put((byte) 0xde);
 					buffer.put((byte) 0);
@@ -88,6 +101,54 @@ public class DolphinConnection {
 		}).start();
 	}
 
+	public void receiveDiscover(final DiscoverListener listener) {
+		if (connected)
+			return;
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					synchronized (DolphinConnection.this) {
+						HashSet<Short> discovered = new HashSet<Short>();
+
+						while (!connected) {
+							buffer.clear();
+							socket.receive(packet);
+							buffer.limit(packet.getLength());
+
+							if (buffer.get()!=(byte) 0xdf)
+								continue;
+
+							short id = buffer.getShort();
+
+							if (discovered.contains(id))
+								return;
+
+							byte index = buffer.get();
+							if (index<0 || index>3)
+								continue;
+
+							int port = buffer.getShort() & 0xffff;
+
+							int length = buffer.get();
+							if (length != buffer.remaining())
+								continue;
+
+							byte[] name = new byte[length];
+							buffer.get(name, 0, length);
+
+							discovered.add(id);
+							listener.onDiscover(new UdpMote(packet.getAddress(), port, index, new String(name)));
+						}
+					}
+				} catch (IOException e) {
+					Log.e("Packet", e.getMessage(), e);
+				}
+			}
+		}).start();
+	}
+
 	public void keyDown(int key) {
 		System.out.println(key);
 		buttonMask |= key;
@@ -101,6 +162,39 @@ public class DolphinConnection {
 
 	public void close() {
 		socket.close();
+	}
+
+	public interface DiscoverListener {
+
+		public void onDiscover(UdpMote mote);
+
+	}
+
+	public class UdpMote {
+
+		private InetAddress host;
+		private int port;
+		private int index;
+		private String name;
+
+		public UdpMote(InetAddress host, int port, int index, String name) {
+			this.host = host;
+			this.port = port;
+			this.index = index;
+			this.name = name;
+		}
+
+		public InetAddress getHost() {
+			return host;
+		}
+
+		public int getPort() {
+			return port;
+		}
+
+		public String toString() {
+			return name + " " + index + " (" + host.getHostAddress() + ":" + port + ")";
+		}
 	}
 
 }
