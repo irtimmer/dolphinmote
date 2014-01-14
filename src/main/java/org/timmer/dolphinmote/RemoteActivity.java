@@ -46,7 +46,7 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 	private Sensor accelerometer;
 	private AlertDialog dialog;
 
-	private final static int[] BUTTONS = new int[]{ R.id.button_up, R.id.button_down, R.id.button_left, R.id.button_right, R.id.button_a, R.id.button_back, R.id.button_home, R.id.button_pause, R.id.button_1, R.id.button_2};
+	private final static int[] BUTTONS = new int[]{ R.id.button_up, R.id.button_down, R.id.button_left, R.id.button_right, R.id.button_a, R.id.button_b, R.id.button_back, R.id.button_home, R.id.button_pause, R.id.button_1, R.id.button_2};
 
 	public RemoteActivity() throws IOException {
 		conn = new DolphinConnection();
@@ -135,11 +135,11 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 			else if (v.getId() == R.id.button_b)
 				key = UdpConstants.BUTTON_B;
 			else if (v.getId() == R.id.button_back)
-				key = UdpConstants.BUTTON_R;
+				key = UdpConstants.BUTTON_BACK;
 			else if (v.getId() == R.id.button_home)
-				key = UdpConstants.BUTTON_H;
+				key = UdpConstants.BUTTON_HOME;
 			else if (v.getId() == R.id.button_pause)
-				key = UdpConstants.BUTTON_P;
+				key = UdpConstants.BUTTON_PAUSE;
 			else if (v.getId() == R.id.button_1)
 				key = UdpConstants.BUTTON_1;
 			else if (v.getId() == R.id.button_2)
