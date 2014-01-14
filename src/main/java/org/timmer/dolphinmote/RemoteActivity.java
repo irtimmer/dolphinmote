@@ -69,7 +69,7 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 		for (int button:BUTTONS) {
 			Button view = (Button) findViewById(button);
 			view.setMinimumWidth(minSize);
-			view.setTextSize(minSize/4);
+			view.setTextSize(minSize/6);
 			view.setOnTouchListener(this);
 		}
 	}
@@ -100,6 +100,21 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 			conn.sendAccelerator(-event.values[0], -event.values[1], event.values[2]);
+		}
+	}
+
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			View decorView = this.getWindow().getDecorView();
+			decorView.setSystemUiVisibility(
+				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 		}
 	}
 
