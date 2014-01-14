@@ -23,14 +23,17 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -57,8 +60,17 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 		sensors = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		accelerometer = sensors.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+
+		int minSize = size.y/7;
+
 		for (int button:BUTTONS) {
-			findViewById(button).setOnTouchListener(this);
+			Button view = (Button) findViewById(button);
+			view.setMinimumWidth(minSize);
+			view.setTextSize(minSize/4);
+			view.setOnTouchListener(this);
 		}
 	}
 
