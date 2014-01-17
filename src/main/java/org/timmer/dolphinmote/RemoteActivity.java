@@ -28,6 +28,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -61,10 +62,14 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 		accelerometer = sensors.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
 		Display display = getWindowManager().getDefaultDisplay();
-		Point size = new Point();
-		display.getSize(size);
+		int minSize = 0;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+			Point size = new Point();
+			display.getSize(size);
 
-		int minSize = size.y/7;
+			minSize = size.y/7;
+		} else
+			minSize = display.getHeight()/7;
 
 		for (int button:BUTTONS) {
 			Button view = (Button) findViewById(button);
