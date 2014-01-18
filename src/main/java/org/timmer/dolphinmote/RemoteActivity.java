@@ -111,7 +111,7 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		if (hasFocus) {
+		if (hasFocus && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			View decorView = this.getWindow().getDecorView();
 			decorView.setSystemUiVisibility(
 				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
