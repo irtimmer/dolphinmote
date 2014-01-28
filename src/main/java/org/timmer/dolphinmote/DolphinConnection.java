@@ -174,31 +174,4 @@ public class DolphinConnection {
 
 	}
 
-	public class UdpMote {
-
-		private InetAddress host;
-		private int port;
-		private int index;
-		private String name;
-
-		public UdpMote(InetAddress host, int port, int index, String name) {
-			this.host = host;
-			this.port = port;
-			this.index = index;
-			this.name = name;
-		}
-
-		public InetAddress getHost() {
-			return host;
-		}
-
-		public int getPort() {
-			return port;
-		}
-
-		public String toString() {
-			return name + " " + index + " (" + host.getHostAddress() + ":" + port + ")";
-		}
-	}
-
 }

@@ -3,5 +3,15 @@
 
     <string name="app_name">DolphinMote</string>
     <string name="pick_mote">Pick WiiMote</string>
+    <string name="custom">Custom connection</string>
+
+    <string name="connect">Connect</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="server">Server</string>
+    <string name="port">Port</string>
+
+    <string name="unknown_host">Server could not be found</string>
+    <string name="connection_error">Could not connect to server</string>
 
 </resources>

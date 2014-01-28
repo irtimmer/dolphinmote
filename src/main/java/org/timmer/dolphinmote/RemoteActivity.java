@@ -31,13 +31,18 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 public class RemoteActivity extends Activity implements SensorEventListener, View.OnTouchListener {
 
@@ -45,7 +50,7 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 
 	private SensorManager sensors;
 	private Sensor accelerometer;
-	private AlertDialog dialog;
+	private AlertDialog discoverDialog, customDialog;
 
 	private final static int[] BUTTONS = new int[]{ R.id.button_up, R.id.button_down, R.id.button_left, R.id.button_right, R.id.button_a, R.id.button_b, R.id.button_back, R.id.button_home, R.id.button_pause, R.id.button_1, R.id.button_2};
 
@@ -83,7 +88,7 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 	protected void onResume() {
 		sensors.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
-		if (dialog == null)
+		if (discoverDialog == null)
 			showDiscoverDialog();
 
 		super.onResume();
@@ -166,38 +171,84 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 	public void onAccuracyChanged(Sensor sensor, int i) {}
 
 	public void showDiscoverDialog() {
-		final ArrayAdapter<DolphinConnection.UdpMote> list = new ArrayAdapter<DolphinConnection.UdpMote>(this, android.R.layout.select_dialog_singlechoice);
+		final ArrayAdapter<UdpMote> list = new ArrayAdapter<UdpMote>(this, android.R.layout.select_dialog_singlechoice);
+		list.add(new UdpMote(getText(R.string.custom).toString()));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.pick_mote);
 		builder.setAdapter(list, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				DolphinConnection.UdpMote mote = list.getItem(which);
-				try {
-					conn.setServer(mote.getHost(), mote.getPort());
-				} catch (SocketException e) {
-					e.printStackTrace();
-				}
+				UdpMote mote = list.getItem(which);
+
+				if (mote.getHost()!=null) {
+					try {
+						conn.setServer(mote.getHost(), mote.getPort());
+					} catch (SocketException e) {
+						e.printStackTrace();
+					}
+				} else
+					showCustomDialog();
 			}
 		});
-		dialog = builder.show();
+		discoverDialog = builder.create();
+		discoverDialog.show();
 
-		dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+		discoverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 			@Override
 			public void onDismiss(DialogInterface dialogInterface) {
-				if (!conn.isConnected())
+				if (customDialog!=null)
+					customDialog.show();
+				else if (!conn.isConnected())
 					RemoteActivity.this.finish();
 			}
 		});
 
 		conn.receiveDiscover(new DolphinConnection.DiscoverListener() {
 			@Override
-			public void onDiscover(final DolphinConnection.UdpMote mote) {
+			public void onDiscover(final UdpMote mote) {
 				RemoteActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
 						list.add(mote);
 					}
 				});
+			}
+		});
+	}
+
+	public void showCustomDialog() {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.custom);
+		LayoutInflater inflater = this.getLayoutInflater();
+		final View view = inflater.inflate(R.layout.dialog_custom, null);
+
+		builder.setView(view).setPositiveButton(R.string.connect, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int id) {
+				TextView hostname = (TextView) view.findViewById(R.id.server);
+				TextView port = (TextView) view.findViewById(R.id.port);
+
+				try {
+					InetAddress host = InetAddress.getByName(hostname.getText().toString());
+					conn.setServer(host, Integer.parseInt(port.getText().toString()));
+					dialog.dismiss();
+				} catch (UnknownHostException e) {
+					Toast.makeText(RemoteActivity.this, getText(R.string.unknown_host), Toast.LENGTH_LONG);
+				} catch (SocketException e) {
+					Toast.makeText(RemoteActivity.this, getText(R.string.connection_error), Toast.LENGTH_LONG);
+				}
+			}
+		}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int id) {
+				RemoteActivity.this.finish();
+			}
+		});
+		customDialog = builder.create();
+		customDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialogInterface) {
+				if (!conn.isConnected())
+					RemoteActivity.this.finish();
 			}
 		});
 	}
