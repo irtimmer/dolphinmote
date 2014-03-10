@@ -143,7 +143,8 @@ public class DolphinConnection {
 						}
 					}
 				} catch (IOException e) {
-					Log.e("Packet", e.getMessage(), e);
+					if (!connected)
+						Log.e("Packet", e.getMessage(), e);
 				}
 			}
 		}).start();
