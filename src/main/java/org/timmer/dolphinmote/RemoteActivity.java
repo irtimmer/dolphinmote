@@ -28,6 +28,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
@@ -223,19 +224,34 @@ public class RemoteActivity extends Activity implements SensorEventListener, Vie
 
 		builder.setView(view).setPositiveButton(R.string.connect, new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int id) {
-				TextView hostname = (TextView) view.findViewById(R.id.server);
-				TextView port = (TextView) view.findViewById(R.id.port);
+			public void onClick(final DialogInterface dialog, int id) {
+				final TextView hostname = (TextView) view.findViewById(R.id.server);
+				final TextView port = (TextView) view.findViewById(R.id.port);
 
-				try {
-					InetAddress host = InetAddress.getByName(hostname.getText().toString());
-					conn.setServer(host, Integer.parseInt(port.getText().toString()));
-					dialog.dismiss();
-				} catch (UnknownHostException e) {
-					Toast.makeText(RemoteActivity.this, getText(R.string.unknown_host), Toast.LENGTH_LONG);
-				} catch (SocketException e) {
-					Toast.makeText(RemoteActivity.this, getText(R.string.connection_error), Toast.LENGTH_LONG);
-				}
+				new AsyncTask<Void, Void, CharSequence>() {
+					@Override
+					protected CharSequence doInBackground(Void... voids) {
+						try {
+							InetAddress host = InetAddress.getByName(hostname.getText().toString());
+							conn.setServer(host, Integer.parseInt(port.getText().toString()));
+							dialog.dismiss();
+						} catch (UnknownHostException e) {
+							return getText(R.string.unknown_host);
+						} catch (SocketException e) {
+							return getText(R.string.connection_error);
+						}
+
+						return null;
+					}
+
+					@Override
+					protected void onPostExecute(CharSequence message) {
+						if (message!=null)
+							Toast.makeText(RemoteActivity.this, message, Toast.LENGTH_LONG);
+
+						dialog.dismiss();
+					}
+				}.execute(null);
 			}
 		}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
 			@Override
